@@ -1,8 +1,6 @@
 const phantom = require('phantom');
 const asleep = require('asleep');
 
-const screenshots = __dirname + '/phantom-screenshots/';
-
 async function fillInBlocketForm() {
 	const instance = await phantom.create();
 
@@ -25,50 +23,48 @@ async function fillInBlocketForm() {
 		}
 	}
 
-	await page.property('viewportSize', {width: 1024, height: 2000});
+	await page.property('viewportSize', {width: 1024, height: 2000}).catch((err)=>console.log(err));
 
-	await page.open('https://www.blocket.se/helasverige').catch((err)=>console.log(err));
+	await page.open('http://www.dmi.dk/vejr/til-lands/byvejr/by/vis/SE/2662149/Ystad,%20Sverige').catch((err)=>console.log(err));
 
-	let content = await page.property('content');
-
-	page.evaluate(function(searchText, category, counties) {
-		$('#searchtext').val(searchText);
-
-		var catNumber = $('#catgroup option:contains("' + category + '")').val();
-
-		$('#catgroup').val(catNumber).change();
-
-		counties.forEach(function(county) {
-
-			$('.multiselect-container input[data-dropdown-readable-name="' + county + '"]').click();
-		});
-	},
-		'Sköldpadda',
-		'FRITID & HOBBY',
-		['Jämtland', 'Skåne', 'Dalarna']
-	);
-
-	screenshots && page.render(screenshots + 'blocket1.jpg');
+	let content = await page.property('content').catch((err)=>console.log(err));
 
 	page.evaluate(function() {
-		$('#searchbutton').click();
+		// $('#hour_table table')[0];
+		console.log('$(#hour_table table)[0]', $('#hour_table table')[0]);
 	});
-
-	await waitForPageLoad();
-
-	let searchResult = await page.evaluate(function(){
-		var content = [];
-		$('#item_list article').each(function(){
-			content.push(this.outerHTML);
-		});
-		return content;
-	});
-
-	screenshots && page.render(screenshots + 'blocket2.jpg');
-
-	console.log(searchResult);
-
-	console.log("DONE");
 }
+
+	// 	var catNumber = $('#catgroup option:contains("' + category + '")').val();
+
+	// 	$('#catgroup').val(catNumber).change();
+
+	// 	counties.forEach(function(county) {
+
+	// 		$('.multiselect-container input[data-dropdown-readable-name="' + county + '"]').click();
+	// 	});
+	// },
+	// 	'Sköldpadda',
+	// 	'FRITID & HOBBY',
+	// 	['Jämtland', 'Skåne', 'Dalarna']
+	// );
+
+	// page.evaluate(function() {
+	// 	$('#searchbutton').click();
+	// });
+
+	// await waitForPageLoad();
+
+	// let searchResult = await page.evaluate(function(){
+	// 	var content = [];
+	// 	$('#item_list article').each(function(){
+	// 		content.push(this.outerHTML);
+	// 	});
+	// 	return content;
+	// });
+
+	// console.log(searchResult);
+
+	// console.log("DONE");
 
 fillInBlocketForm();
