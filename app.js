@@ -1,11 +1,9 @@
 const phantom = require('phantom');
 const asleep = require('asleep');
 
-// Path to screenshot folder or false (to turn off screenshots)
 const screenshots = __dirname + '/phantom-screenshots/';
 
 async function runScraper(){
-
 	const instance = await phantom.create();
 
 	const page = await instance.createPage();
