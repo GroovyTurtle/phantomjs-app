@@ -1,10 +1,15 @@
 const phantom = require('phantom');
 const asleep = require('asleep');
 
+const screenshots = false;
+
+console.log('Here!');
+
 async function fillInBlocketForm() {
 	const instance = await phantom.create();
 
 	const page = await instance.createPage();
+
 
 	async function waitForPageLoad() {
 		while(
@@ -29,42 +34,38 @@ async function fillInBlocketForm() {
 
 	let content = await page.property('content').catch((err)=>console.log(err));
 
-	page.evaluate(function() {
-		// $('#hour_table table')[0];
-		console.log('$(#hour_table table)[0]', $('#hour_table table')[0]);
+	await waitForPageLoad();
+
+	let searchResult = await page.evaluate(function(){
+		var content = $('#hour_table table')[0];
+		return content;
 	});
+
+	console.log(searchResult);
+
+	console.log("DONE");
 }
 
-	// 	var catNumber = $('#catgroup option:contains("' + category + '")').val();
-
-	// 	$('#catgroup').val(catNumber).change();
-
-	// 	counties.forEach(function(county) {
-
-	// 		$('.multiselect-container input[data-dropdown-readable-name="' + county + '"]').click();
-	// 	});
-	// },
-	// 	'Sköldpadda',
-	// 	'FRITID & HOBBY',
-	// 	['Jämtland', 'Skåne', 'Dalarna']
-	// );
-
-	// page.evaluate(function() {
-	// 	$('#searchbutton').click();
-	// });
-
-	// await waitForPageLoad();
-
-	// let searchResult = await page.evaluate(function(){
-	// 	var content = [];
-	// 	$('#item_list article').each(function(){
-	// 		content.push(this.outerHTML);
-	// 	});
-	// 	return content;
-	// });
-
-	// console.log(searchResult);
-
-	// console.log("DONE");
-
 fillInBlocketForm();
+
+// page.evaluate(function() {
+// 	$('#hour_table table')[0];
+// });
+
+// 	var catNumber = $('#catgroup option:contains("' + category + '")').val();
+
+// 	$('#catgroup').val(catNumber).change();
+
+// 	counties.forEach(function(county) {
+
+// 		$('.multiselect-container input[data-dropdown-readable-name="' + county + '"]').click();
+// 	});
+// },
+// 	'Sköldpadda',
+// 	'FRITID & HOBBY',
+// 	['Jämtland', 'Skåne', 'Dalarna']
+// );
+
+// page.evaluate(function() {
+// 	$('#searchbutton').click();
+// });
