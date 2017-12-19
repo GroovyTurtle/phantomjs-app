@@ -1,16 +1,23 @@
-const phantom = require('phantom');
-const asleep = require('asleep');
 const express = require('express');
 const app = express();
+const phantom = require('phantom');
+const asleep = require('asleep');
 
-runScraper();
+let weatherData = {};
+let weatherFakeData = {};
+let trainData = {};
+let trainFakeData = {};
 
-app.use(express.static(__dirname + '/www', {extensions: ['html']}));
+weatherScraper();
+setInterval(weatherScraper, 300 * 1000);
+trainScraper();
+setInterval(trainScraper, 300 * 1000);
 
-app.listen(4000, () => console.log('Listening on port 3000!'));
+async function trainScraper() {
+	trainData.running = true;
+}
 
-async function runScraper(){
-
+async function weatherScraper() {
 	const instance = await phantom.create();
 	const page = await instance.createPage();
 
@@ -18,6 +25,7 @@ async function runScraper(){
 
   	let content = await page.property('content');
   	let weatherTd = [];
+	let rainToday = false;
 
   	while (!weatherTd.length){
 	  	weatherTd = await page.evaluate(function() {
@@ -30,11 +38,8 @@ async function runScraper(){
 		await asleep(100);
 	}
 
-	let searchResult = await constructingColumns(weatherTd);
-
   	async function constructingColumns(data) {
-		let weatherInformation = [];
-		let rainToday = false;
+		let weatherInformation = {hourlyData: []};
 		let columnKey = ['time', 'DanishLoremIpsum', 'degrees', 'rain', 'wind'];
 
 		for (let i = 0; i < data.length; i += 5) {
@@ -50,13 +55,48 @@ async function runScraper(){
 				}
 			});
 
-			weatherInformation.push(informationToPush);
+			weatherInformation.hourlyData.push(informationToPush);
+			weatherInformation.rain = rainToday;
 		}
 
 		return weatherInformation;
 	}
 
-	console.log(searchResult);
-
-	console.log("DONE");
+	weatherData = await constructingColumns(weatherTd);
 }
+
+app.use(express.static(__dirname + '/www', {extensions: ['html']}));
+
+app.get('/weather',(req,res) => {
+	res.json(weatherData);
+});
+
+app.get('/train',(req,res) => {
+	res.json(trainData);
+});
+
+app.get('/trainRunning',(req,res) => {
+	trainFakeData = trainData;
+	trainFakeData.running = true;
+	res.json(trainFakeData);
+});
+
+app.get('/trainNotRunning',(req,res) => {
+	trainFakeData = trainData;
+	trainFakeData.running = false;
+	res.json(trainFakeData);
+});
+
+app.get('/fakeRain',(req,res) => {
+	weatherFakeData = weatherData;
+	weatherFakeData.rain = true;
+	res.json(weatherFakeData);
+});
+
+app.get('/fakeNoRain',(req,res) => {
+	weatherFakeData = weatherData;
+	weatherFakeData.rain = false;
+	res.json(weatherFakeData);
+});
+
+app.listen(4000, () => console.log('Listening on port 4000!'));
