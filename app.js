@@ -1,7 +1,13 @@
 const phantom = require('phantom');
 const asleep = require('asleep');
+const express = require('express');
+const app = express();
 
 runScraper();
+
+app.use(express.static(__dirname + '/www', {extensions: ['html']}));
+
+app.listen(4000, () => console.log('Listening on port 3000!'));
 
 async function runScraper(){
 
@@ -27,15 +33,19 @@ async function runScraper(){
 	let searchResult = await constructingColumns(weatherTd);
 
   	async function constructingColumns(data) {
-		var weatherInformation = [];
-		var columnKey = ['time', 'DanishLoremIpsum', 'degrees', 'rain', 'wind'];
+		let weatherInformation = [];
+		let rainToday = false;
+		let columnKey = ['time', 'DanishLoremIpsum', 'degrees', 'rain', 'wind'];
 
-		for (var i = 0; i < data.length; i += 5) {
+		for (let i = 0; i < data.length; i += 5) {
 
 			let informationToPush = {};
 
 			columnKey.forEach(function (key, index) {
 				if (index !== 1) {
+					if (key === 'rain' && data[i + index] !== '0,0 mm ') {
+						rainToday = true;
+					}
 					informationToPush[key] = data[i + index];
 				}
 			});
